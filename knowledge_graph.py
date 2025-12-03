@@ -80,7 +80,7 @@ class AgriculturalKnowledgeGraph:
             'growth_pattern': growth_pattern
         }
 
-    def add_plot(self, plot_id: int, metadata: Dict, time_series: pd.DataFrame):
+    def add_plot(self, plot_id: int, metadata: Dict, time_series: pd.DataFrame, quality_score: float = None):
         """
         Add a plot to the knowledge graph
 
@@ -88,6 +88,7 @@ class AgriculturalKnowledgeGraph:
             plot_id: Unique plot identifier
             metadata: Dict with plot metadata (farm, soil, crop, etc.)
             time_series: DataFrame with date index and target column
+            quality_score: Optional data quality score (0-100)
         """
         # Extract curve shape features
         curve_features = self._extract_curve_features(time_series)
@@ -101,13 +102,15 @@ class AgriculturalKnowledgeGraph:
             location=metadata.get('location'),
             year=metadata.get('year'),
             num_weeks=len(time_series),
+            quality_score=quality_score,  # Add quality score
             **curve_features  # Add all curve features to node
         )
 
         # Store time series data separately (more efficient)
         self.plot_data[plot_id] = time_series.copy()
 
-        print(f"Added plot {plot_id}: {metadata.get('crop')} at {metadata.get('farm')}")
+        quality_msg = f" (quality: {quality_score:.1f})" if quality_score is not None else ""
+        print(f"Added plot {plot_id}: {metadata.get('crop')} at {metadata.get('farm')}{quality_msg}")
     
     def add_relationship(self, plot1: int, plot2: int, relationship_type: str, weight: float = 1.0):
         """Add a relationship edge between two plots"""
